@@ -1,10 +1,10 @@
 # **Get screenshot faster**
 
-### I have focus on Microsoft Edge performance improement for few days. After investigating by time profile, I find screenshot is another breakthrough that we can take action. It cost **100ms-300ms** on mainthread. 
+### Recently, I have focus on performance improvement in our project. After investigating by time profile, I find screenshot is another breakthrough that we can take action. It cost **100ms-300ms** on mainthread. 
 <br/>
 
-## **The old method**
-### Following is the code used in Edge before. It cost roughly 300ms on main thread, a big problem!
+## **1. The old method**
+### Following is the code used in our project before. It cost roughly 300ms on main thread, a big problem!
 ```Swift
 UIGraphicsBeginImageContextWithOptions(viewBounds.size, false, 0)
 view.drawHierarchy(in: viewBounds, afterScreenUpdates: false)
@@ -19,7 +19,7 @@ UIGraphicsEndImageContext()
 ### 2. Can I get screenshot on worker thread? Don't block main thread.
 <br/>
 
-## **A faster methord on iOS 10**
+## **2. A faster methord on iOS 10**
 Actually we fond a good method, it's available after iOS 10. This methond only cost about 100ms. But not enough I think.
 
 ```Swift
@@ -30,7 +30,7 @@ let image = renderer.image { rendererContext in
 }
 ```
 
-## **Run on background thread**
+## **3. Run on background thread**
 Can this new method run on background thread? Fortunately, the anwser is yes!!!<br/>
 Apple development Doc has a mistake with this method. They told developers this method should run on main thread. But they retract the statement later.<br/>
 The only think we need to do is prepare some properties(viewbound,layer) must got on main thread. 
@@ -53,7 +53,7 @@ AsyncUtils.async {
 # **Not the End!!!**
 
 ## **What if must run on main thread?**
-Sometimes we need get screenshot on main thread, such as: Before open Tab center, Edge browser need use current screenshot for animation.
+Sometimes we need get screenshot on main thread, such as get a screenshot for animation.
 ## So I use a simple if...else... to separate the OS version.
 
 ```Swift

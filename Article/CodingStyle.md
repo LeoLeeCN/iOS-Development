@@ -2,18 +2,21 @@
 
 **Good habits make a good life.**
 
-### After focus on Microsoft Edge performance improement for few days. I'd like to raise some advice here. You might think it's simple, but it's still deserve review.
+### After focus on performance improement for few days. I'd like to raise some advice here. You might think it's simple, but it's still deserve review.
 
 ## **1. Don't repeat**
 When user swipe on webview, Edge will auto show/hide address bar. Here we need to get address bar's height.
 
+Here has an example. This property is the height of address bar in browser. The address bar will auto show/hide when user swipe on webview.<br>
+A simple property, doesn't seem to take long time. But cumulative time is huge, we need to refine it.
+
 ```Swift
 static var height: CGFloat {
-        return EMMXHeaderViewController.Heights.searchBoxHeight
-            + (SizeClassManager.shared.isSizeClassLarge ? 0 : 2 * EMMXHeaderViewController.Heights.stackViewTopBottomPadding)
+        return HeaderViewController.Heights.searchBoxHeight
+            + (SizeClassManager.shared.isSizeClassLarge ? 0 : 2 * HeaderViewController.Heights.stackViewTopBottomPadding)
             + (SizeClassManager.shared.isSizeClassLarge ? 10 : 0)
-            + EMMXHeaderViewController.Heights.separatorLineHeight
-            + (SizeClassManager.shared.isSizeClassLarge ? EMMXHeaderViewController.Heights.tabBarHeight : 0)
+            + HeaderViewController.Heights.separatorLineHeight
+            + (SizeClassManager.shared.isSizeClassLarge ? HeaderViewController.Heights.tabBarHeight : 0)
     }
 ```
 
@@ -24,30 +27,25 @@ So I change it as following, only calculate once.
 
 ```Swift
 static var height: CGFloat {
-        return SizeClassManager.shared.isSizeClassLarge ? EMMXHeaderViewController.largeSizeHeight : EMMXHeaderViewController.normalSizeHeight
+        return SizeClassManager.shared.isSizeClassLarge ? HeaderViewController.largeSizeHeight : HeaderViewController.normalSizeHeight
     }
 
-    static let largeSizeHeight: CGFloat = EMMXHeaderViewController.Heights.searchBoxHeight
-            + EMMXHeaderViewController.Heights.separatorLineHeight
-            + EMMXHeaderViewController.Heights.tabBarHeight
+    static let largeSizeHeight: CGFloat = HeaderViewController.Heights.searchBoxHeight
+            + HeaderViewController.Heights.separatorLineHeight
+            + HeaderViewController.Heights.tabBarHeight
             + 10
     
-    static let normalSizeHeight: CGFloat = EMMXHeaderViewController.Heights.searchBoxHeight
-            + EMMXHeaderViewController.Heights.separatorLineHeight
-            + 2 * EMMXHeaderViewController.Heights.stackViewTopBottomPadding
+    static let normalSizeHeight: CGFloat = HeaderViewController.Heights.searchBoxHeight
+            + HeaderViewController.Heights.separatorLineHeight
+            + 2 * HeaderViewController.Heights.stackViewTopBottomPadding
 ```
 
 ## **2. Don’t belittle a single statement**
 One single line maybe cost more than 100ms on UI thread. That would be a disaster if run on UI Thread.
 Such as:<br/>
-<img src="../Picture/iOS-Development/Edge-Performance/NSLinguisticTagger.png" width="600">
+<img src="../Picture/Performance/NSLinguisticTagger.png" width="600">
 
-<img src="../Picture/iOS-Development/Edge-Performance/ProxyRefresh.png" width="600">
-
-
-## **3. Avoid modify frame/bounds/transform of UIView**
 **The best solution is post on worker thread**
-Avoid use : view.isDescendant
 
 
 # **To be continued**
