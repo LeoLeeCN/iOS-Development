@@ -66,7 +66,9 @@ end of task
 RunloopId : 27, Activity : 64
 ```
 当我把一些耗时操作写在viewDidLoad或者viewWillAppear的时候，奇怪的事情发生了。
-** 状态32是beforeWaiting，也就是说如果卡顿出现在viewDidLoad或者viewWillAppear中的时候，Runloop并不能及时通知observer当前的状态。也就是说监测不到卡顿。**
+状态32是beforeWaiting，也就是说如果卡顿出现在viewDidLoad或者viewWillAppear中的时候，Runloop并不能及时通知observer当前的状态。也就是说监测不到卡顿。
+大致原因：我没有进行深入研究，只是大致猜想。可能由于runloop在处理完UI相关source后，比如viewDidLoad之后，后面会紧接着进入idle状态(beforeWaiting)，然而此时线程的阻塞导致runloop的状态不能及时通知，从而检测不出来。
+
 
 ## **Ping**
 Ping 这种方法是我在GodEyes中学习到的。这种方法不依赖Runloop的状态。是在另一个线程中向主线程push task。如果超过一定时间这个task没有被执行，就认为主线程卡顿。
