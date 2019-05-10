@@ -1,6 +1,6 @@
 # **线上卡顿监测： 用Runloop还是Ping？**
 
-### 最近因为项目需求，做了一个线上卡顿监测。 查了很多资料，有人说用Runloop。也有zixun大神的 [GodEyes](https://github.com/zixun/GodEye)
+### 最近因为项目需求，做了一个线上卡顿监测。 查了很多资料，有人说用Runloop。也有zixun大神的[GodEyes](https://github.com/zixun/GodEye)
 ### 但是经过测试，我发现这两种方法各有缺陷。下边将先介绍两种方式的优缺点，并给出自己的解决方案。 如有不对的地方，请各位大神指出。
 
 ## **什么是卡顿**
@@ -10,7 +10,7 @@
 
 
 ## **Runloop**
-###假设大家都已经了解Runloop， 不了的的请自行Google。
+###假设大家都已经了解Runloop， 不了解的请自行Google。
 
 ### **原理**
 ### 在runLoopObserver中可以监测到以下几种状态：beforeTimers（2），beforeSources（4）， beforeWaiting（32）， afterWaiting（64）. 一般情况下是(2)-(4)-(32)-(64)-（2）循环。所以可以通过注册一个runloop的observer来进行卡顿监测。
