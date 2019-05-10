@@ -44,7 +44,10 @@ Such as:<br/>
 
 <img src="../Picture/iOS-Development/Edge-Performance/ProxyRefresh.png" width="600">
 
+
+## **3. Avoid modify frame/bounds/transform of UIView**
 **The best solution is post on worker thread**
+Avoid use : view.isDescendant
 
 
 # **To be continued**
