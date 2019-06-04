@@ -31,7 +31,7 @@ func extractMethodFrom2(owner: AnyObject, selector: Selector) -> ((Any?) -> Any)
 webView.setValue(true, forKey: "_haveSetObscuredInsets")
 ```
 
-## 如何查看一个Swift class 的那些function和property继承自OC
+## 如何查看一个Class有哪些私有function和property
 ```Swift
 showClsRuntime(cls: WKBackForwardList.self)
 
