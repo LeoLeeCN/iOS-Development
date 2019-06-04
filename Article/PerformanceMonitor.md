@@ -1,7 +1,8 @@
 # **线上卡顿监测： 用Runloop还是Ping？**
 
-### 最近因为项目需求，做了一个线上卡顿监测。 查了很多资料，有人说用Runloop。也有zixun大神的[GodEyes](https://github.com/zixun/GodEye)
-### 但是经过测试，我发现这两种方法各有缺陷。下边将先介绍两种方式的优缺点，并给出自己的解决方案。 如有不对的地方，请各位大神指出。
+最近因为项目需求，做了一个线上卡顿监测。 查了很多资料，有人说监听Runloop状态。也有zixun大神的[GodEyes](https://github.com/zixun/GodEye)中监测ANR的方法（ping主线程）。
+
+但是经过测试，我发现这两种方法各有缺陷。下边将先介绍两种方式的优缺点，并给出自己的解决方案。 如有不对的地方，请各位大神指出。
 
 ## **什么是卡顿**
 ### 卡顿就是主线程没有足够的时间片去绘制UI，导致用户看到的UI动画不是连续的。比如scrollview在滚动的时候跳动。
@@ -9,10 +10,10 @@
 
 
 ## **Runloop**
-###假设大家都已经了解Runloop， 不了解的请自行Google。
+假设大家都已经了解Runloop， 不了解的请自行Google。
 
 ### **原理**
-### 在runLoopObserver中可以监测到以下几种状态：beforeTimers（2），beforeSources（4）， beforeWaiting（32）， afterWaiting（64）. 一般情况下是(2)-(4)-(32)-(64)-（2）循环。所以可以通过注册一个runloop的observer来进行卡顿监测。
+在runLoopObserver中可以监测到以下几种状态：beforeTimers（2），beforeSources（4）， beforeWaiting（32）， afterWaiting（64）. 一般情况下是(2)-(4)-(32)-(64)-(2）循环。所以可以通过注册一个runloop的observer来进行卡顿监测。
 
 ### **代码实现**
 ```Swift
@@ -51,7 +52,9 @@ func startShortSerialLagMonitor() {
 ```
 ### **缺点**
 **划重点，以下必考**
-### 一般来说，runloop处理事件时间主要出在两个阶段：beforeSources和beforeWaiting之间，afterWaiting之后。所以上边的代码监测beforeSources 和 afterWaiting这两个状态下是否超时是没问题的。
+
+一般来说，runloop处理事件时间主要出在两个阶段：beforeSources和beforeWaiting之间，afterWaiting之后。所以上边的代码监测beforeSources 和 afterWaiting这两个状态下是否超时是没问题的。
+
 ### 但是经过写代码测试，发现并不是这么简单。大家看下边的Log：
 ```Swift
 RunloopId : 27, Activity : 2
@@ -61,11 +64,13 @@ begin of task
 end of task
 RunloopId : 27, Activity : 64
 ```
-### 当我把一些耗时操作写在viewDidLoad或者viewWillAppear的时候，奇怪的事情发生了。
-### **状态32是beforeWaiting，也就是说如果卡顿出现在viewDidLoad或者viewWillAppear中的时候，Runloop并不能及时通知observer当前的状态。也就是说监测不到卡顿。
+当我把一些耗时操作写在viewDidLoad或者viewWillAppear的时候，奇怪的事情发生了。
+状态32是beforeWaiting，也就是说如果卡顿出现在viewDidLoad或者viewWillAppear中的时候，Runloop并不能及时通知observer当前的状态。也就是说监测不到卡顿。
+大致原因：我没有进行深入研究，只是大致猜想。可能由于runloop在处理完UI相关source后，比如viewDidLoad之后，后面会紧接着进入idle状态(beforeWaiting)，然而此时线程的阻塞导致runloop的状态不能及时通知，从而检测不出来。
+
 
 ## **Ping**
-### Ping 这种方法是我在GodEyes中学习到的。这种方法不依赖Runloop的状态。是在另一个线程中向主线程push task。如果超过一定时间这个task没有被执行，就认为主线程卡顿。
+Ping 这种方法是我在GodEyes中学习到的。这种方法不依赖Runloop的状态。是在另一个线程中向主线程push task。如果超过一定时间这个task没有被执行，就认为主线程卡顿。
 
 ### **代码实现**
 ```Swift
@@ -88,15 +93,18 @@ RunloopId : 27, Activity : 64
     }
 ```
 ### **缺点**
-### 当runloop队列中积累了很多task时，这种方法会造成误报。因为每个小task并没有超时。
-### 相较于runloop，这种方法也监测不到连续的小卡顿。
+当runloop队列中积累了很多task时，这种方法会造成误报。因为每个小task并没有超时。
+
+相较于runloop，这种方法也监测不到连续的小卡顿。
 
 ## **最终方案**
-### 比较了两种方法的优缺点，我在monitor中同时使用。并且改进Ping的方式。
+比较了两种方法的优缺点，我在monitor中同时使用。并且改进Ping的方式。
 
 ### **代码实现**
-### runloop的方式不变
-### ping的方式改为，只有状态是beforeWaiting的时候才ping主线程。
+runloop的方式不变
+
+ping的方式改为，只有状态是beforeWaiting的时候才ping主线程。
+
 ### **代码实现**
 ```Swift
         func startLongSingleLagMonitor() {
